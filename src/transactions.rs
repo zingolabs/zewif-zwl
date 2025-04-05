@@ -359,9 +359,9 @@ impl Utxo {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct WitnessCache {
-    pub(crate) witnesses: Vec<IncrementalWitness>,
-    pub(crate) top_height: u64,
+pub struct WitnessCache {
+    pub witnesses: Vec<IncrementalWitness>,
+    pub top_height: u64,
 }
 
 #[allow(dead_code)]

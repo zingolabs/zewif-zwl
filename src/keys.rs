@@ -417,6 +417,8 @@ impl<P: zcash_protocol::consensus::Parameters> Keys<P> {
                 zcash_primitives::zip32::ChildIndex::hardened(pos),
             ],
         );
+
+        #[allow(deprecated)]
         let extfvk: ExtendedFullViewingKey = extsk.to_extended_full_viewing_key();
         let address = extfvk.default_address().1;
 

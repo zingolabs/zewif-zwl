@@ -122,8 +122,6 @@ impl WalletTKey {
     ) -> secp256k1::SecretKey {
         assert_eq!(bip39_seed.len(), 64);
 
-        let ct = config.get_coin_type();
-
         let ext_t_key = ExtendedPrivKey::with_seed(bip39_seed).unwrap();
         let r = ext_t_key
             .derive_private_key(KeyIndex::hardened_from_normalize_index(44).unwrap())
