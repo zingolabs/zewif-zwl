@@ -29,7 +29,7 @@ orchard_new = { package = "orchard", version = "0.10.1" }
 sapling = { package = "sapling-crypto", version = "0.3", default-features = false }
 incrementalmerkletree = "0.3.1"
 zcash_protocol = "0.5.0"
-zingolib = { git = "https://github.com/zingolabs/zingolib.git", rev = "965e81228d3a1d99b76c1e3c71202d8fdbbd41dc", features = [
+zingolib = { git = "https://github.com/zingolabs/zingolib.git", tag = "1.11.0", features = [
     "test-elevation",
 ] }
 byteorder = "1.5.0"
