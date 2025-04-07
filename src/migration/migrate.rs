@@ -3,7 +3,7 @@ use zewif::{Network, ZewifTop, ZewifWallet};
 
 use crate::ZwlWallet;
 
-use super::convert_seed_material;
+use super::{convert_seed_material, convert_transactions};
 
 /// Migrate a Zecwallet-lite wallet to the Zewif wallet format
 pub fn migrate_to_zewif(wallet: &ZwlWallet) -> Result<ZewifTop> {
@@ -29,8 +29,8 @@ pub fn migrate_to_zewif(wallet: &ZwlWallet) -> Result<ZewifTop> {
         zewif_wallet.set_seed_material(seed_material);
     }
 
-    // // Process transactions and collect relevant transaction IDs
-    // let mut transactions = convert_transactions(wallet)?;
+    // Process transactions and collect relevant transaction IDs
+    let transactions = convert_transactions(wallet)?;
 
     // // Convert orchard note commitment tree if available
     // if !wallet
@@ -115,7 +115,7 @@ pub fn migrate_to_zewif(wallet: &ZwlWallet) -> Result<ZewifTop> {
 
     // Add wallet and transactions to the ZewifTop
     zewif_top.add_wallet(zewif_wallet);
-    // zewif_top.set_transactions(transactions);
+    zewif_top.set_transactions(transactions);
 
     Ok(zewif_top)
 }
