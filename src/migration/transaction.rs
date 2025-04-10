@@ -1,7 +1,12 @@
 use std::collections::HashMap;
 
 use anyhow::{Context, Ok, Result};
-use zewif::{Amount, Data, Script, Transaction, TxId, TxIn, TxOut};
+use zewif::{
+    Amount, BlockHeight, Data, JoinSplitDescription, OrchardActionDescription, Script, Transaction,
+    TxId, TxIn, TxOut,
+    sapling::{SaplingOutputDescription, SaplingSpendDescription},
+    u256,
+};
 
 use crate::{Utxo, WalletTx, ZwlWallet};
 
@@ -64,13 +69,84 @@ fn convert_transaction(tx_id: TxId, tx: &WalletTx) -> Result<zewif::Transaction>
             zewif_tx.add_output(zewif_output);
         });
 
-    // TODO: Access sapling note data hashmap for witness information if available
+    // Convert Sapling spends and outputs
+    let mut sapling_spends: Vec<SaplingSpendDescription> = Vec::new();
 
-    // TODO: Convert Sapling spends and outputs
+    let input_sapling_notes = tx.s_notes.clone();
+    let sapling_spent_nullifiers = tx.s_spent_nullifiers.clone();
+
+    for note in input_sapling_notes.iter() {
+        if sapling_spent_nullifiers
+            .iter()
+            .any(|nf| *nf == note.nullifier)
+        {
+            // Spend found, we add it to sapling_spends
+
+            // Value
+            let mut zewif_sapling_desc = SaplingSpendDescription::new();
+            zewif_sapling_desc
+                .set_value(Some(Amount::from_u64(note.note.value().inner()).unwrap()));
+
+            // Index: Zecwallet does not store the spend index
+            // zewif_sapling_desc.set_spend_index(note);
+
+            // Anchor height
+            zewif_sapling_desc.set_anchor_height(Some(BlockHeight::from_u32(
+                note.witnesses.top_height as u32,
+            )));
+
+            // Nullifier
+            zewif_sapling_desc.set_nullifier(u256::from_hex(hex::encode(note.nullifier).as_str()));
+
+            // TODO: ZKProof
+            // It might be possible to regenerate this Groth16 proof when matching it with the corresponding
+            // SpendingKey, but it is not trivial.
+
+            sapling_spends.push(zewif_sapling_desc);
+            // note.spent = Some(true);
+        }
+    }
+
+    let mut sapling_outputs: Vec<SaplingOutputDescription> = Vec::new();
+
+    let output_sapling_notes = tx.s_notes.clone();
+
+    for note in output_sapling_notes.iter() {
+        let mut zewif_sapling_desc = SaplingOutputDescription::new();
+
+        // Output index: Not possible
+
+        // Commitment
+        zewif_sapling_desc.set_commitment(u256::from_hex(
+            hex::encode(note.note.cmu().to_bytes()).as_str(),
+        ));
+
+        // Ephemeral key: Not possible
+        // zewif_sapling_desc.set_ephemeral_key(note.note.cmu());
+
+        // Encrypted ciphertext: Not possible
+        // zewif_sapling_desc.set_enc_ciphertext(note);
+
+        // Memo
+        match &note.memo {
+            Some(m) => zewif_sapling_desc.set_memo(Some(Data::from_slice(m.encode().as_slice()))),
+            None => zewif_sapling_desc.set_memo(None),
+        }
+
+        // Note commitment tree position: Not possible
+
+        // TODO: Witness
+        // let zewif_witness: IncrementalWitness<Anchor, SaplingWitness> = IncrementalWitness::
+        // zewif_sapling_desc.set_witness
+
+        sapling_outputs.push(zewif_sapling_desc);
+    }
 
     // TODO: Convert Orchard actions
+    let orchard_actions: Option<Vec<OrchardActionDescription>>;
 
     // TODO: Convert Sprout JoinSplits if present
+    let sprout_joinsplits: Option<Vec<JoinSplitDescription>>;
 
     Ok(zewif_tx)
 }
