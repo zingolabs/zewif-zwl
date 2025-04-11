@@ -15,3 +15,6 @@ mod_use!(walletzkey);
 mod_use!(orchard_data);
 mod_use!(sapling_data);
 mod_use!(extended_keys);
+mod_use!(migration);
+
+pub use zewif::{Data, ZewifTop};

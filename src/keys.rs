@@ -168,7 +168,7 @@ impl<P: zcash_protocol::consensus::Parameters> Keys<P> {
                 .collect::<Vec<sapling::PaymentAddress>>();
 
             // If extsks is of len 0, then this wallet is locked
-            let zkeys_result = if extsks.len() == 0 {
+            let zkeys_result = if extsks.is_empty() {
                 // Wallet is locked, so read only the viewing keys.
                 extfvks
                     .iter()
@@ -328,7 +328,7 @@ impl<P: zcash_protocol::consensus::Parameters> Keys<P> {
         // The seed bytes is the raw entropy. To pass it to HD wallet generation,
         // we need to get the 64 byte bip39 entropy
 
-        return Ok(bip0039::Mnemonic::<bip0039::language::English>::from_entropy(seed).unwrap());
+        Ok(bip0039::Mnemonic::<bip0039::language::English>::from_entropy(seed).unwrap())
     }
 
     pub fn unlock_wallet(&mut self, passwd: String) -> io::Result<&mut Self> {
@@ -399,7 +399,7 @@ impl<P: zcash_protocol::consensus::Parameters> Keys<P> {
         self.seed.copy_from_slice(&seed);
 
         self.encrypted = true;
-        return Ok(self);
+        Ok(self)
     }
 
     pub fn get_zaddr_from_bip39seed(
