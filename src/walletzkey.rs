@@ -130,7 +130,7 @@ impl WalletZKey {
         match self.keytype {
             WalletZKeyType::HdKey => {
                 let (extsk, extfvk, address) =
-                    Keys::get_zaddr_from_bip39seed(config, &bip39_seed, self.hdkey_num.unwrap());
+                    Keys::get_zaddr_from_bip39seed(config, bip39_seed, self.hdkey_num.unwrap());
 
                 if address != self.zaddress {
                     return Err(io::Error::new(
@@ -161,13 +161,13 @@ impl WalletZKey {
             WalletZKeyType::ImportedSpendingKey => {
                 // For imported keys, we need to decrypt from the encrypted key
                 let nonce = sodiumoxide::crypto::secretbox::Nonce::from_slice(
-                    &self.nonce.as_ref().unwrap(),
+                    self.nonce.as_ref().unwrap(),
                 )
                 .unwrap();
                 let extsk_bytes = match sodiumoxide::crypto::secretbox::open(
-                    &self.enc_key.as_ref().unwrap(),
+                    self.enc_key.as_ref().unwrap(),
                     &nonce,
-                    &key,
+                    key,
                 ) {
                     Ok(s) => s,
                     Err(_) => {

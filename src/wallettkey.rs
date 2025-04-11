@@ -92,21 +92,21 @@ impl WalletTKey {
 
     pub fn address_from_prefix_sk(prefix: &[u8; 2], sk: &secp256k1::SecretKey) -> String {
         let secp = secp256k1::Secp256k1::new();
-        let pk = secp256k1::PublicKey::from_secret_key(&secp, &sk);
+        let pk = secp256k1::PublicKey::from_secret_key(&secp, sk);
 
         // Encode into t address
         let mut hash160 = ripemd::Ripemd160::new();
-        hash160.update(Sha256::digest(&pk.serialize()[..].to_vec()));
+        hash160.update(Sha256::digest(&pk.serialize()[..]));
 
-        let finalized_pk = hash160.finalize().to_base58check(prefix, &[]);
+        
 
-        finalized_pk
+        hash160.finalize().to_base58check(prefix, &[])
     }
 
     pub fn from_raw(sk: &secp256k1::SecretKey, taddr: &String, num: u32) -> Self {
         WalletTKey {
             keytype: WalletTKeyType::HdKey,
-            key: Some(sk.clone()),
+            key: Some(*sk),
             address: taddr.clone(),
             hdkey_num: Some(num),
             locked: false,
@@ -123,7 +123,9 @@ impl WalletTKey {
         assert_eq!(bip39_seed.len(), 64);
 
         let ext_t_key = ExtendedPrivKey::with_seed(bip39_seed).unwrap();
-        let r = ext_t_key
+        
+
+        ext_t_key
             .derive_private_key(KeyIndex::hardened_from_normalize_index(44).unwrap())
             .unwrap()
             .derive_private_key(
@@ -136,9 +138,7 @@ impl WalletTKey {
             .unwrap()
             .derive_private_key(KeyIndex::Normal(pos))
             .unwrap()
-            .private_key;
-
-        r
+            .private_key
     }
 
     pub fn unlock<P: zcash_protocol::consensus::Parameters>(
@@ -150,7 +150,7 @@ impl WalletTKey {
         match self.keytype {
             WalletTKeyType::HdKey => {
                 let sk =
-                    Self::get_taddr_from_bip39seed(&config, &bip39_seed, self.hdkey_num.unwrap());
+                    Self::get_taddr_from_bip39seed(config, bip39_seed, self.hdkey_num.unwrap());
 
                 // Transparent address generation
                 let address = Self::address_from_prefix_sk(&config.base58_pubkey_address(), &sk);
@@ -180,13 +180,13 @@ impl WalletTKey {
             WalletTKeyType::ImportedKey => {
                 // For imported keys, we need to decrypt from the encrypted key
                 let nonce = sodiumoxide::crypto::secretbox::Nonce::from_slice(
-                    &self.nonce.as_ref().unwrap(),
+                    self.nonce.as_ref().unwrap(),
                 )
                 .unwrap();
                 let sk_bytes = match sodiumoxide::crypto::secretbox::open(
-                    &self.enc_key.as_ref().unwrap(),
+                    self.enc_key.as_ref().unwrap(),
                     &nonce,
-                    &key,
+                    key,
                 ) {
                     Ok(s) => s,
                     Err(_) => {
