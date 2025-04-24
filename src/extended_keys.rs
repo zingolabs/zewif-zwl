@@ -68,7 +68,7 @@ impl ExtendedPrivKey {
         let signature = {
             let signing_key = hmac::Key::new(hmac::HMAC_SHA512, b"Bitcoin seed");
             let mut h = hmac::Context::with_key(&signing_key);
-            h.update(&seed);
+            h.update(seed);
             h.sign()
         };
         let sig_bytes = signature.as_ref();
@@ -118,7 +118,7 @@ impl ExtendedPrivKey {
         let tweak_scalar =
             secp256k1::Scalar::from_be_bytes(self.private_key.secret_bytes()).unwrap();
 
-        let derived_priv_key = private_key.clone().add_tweak(&tweak_scalar).unwrap();
+        let derived_priv_key = private_key.add_tweak(&tweak_scalar).unwrap();
 
         Ok(ExtendedPrivKey {
             private_key: derived_priv_key,
