@@ -1,14 +1,14 @@
 use anyhow::{Result, bail};
-use zewif::{Network, ZewifTop, ZewifWallet};
+use zewif::{Network, Zewif, ZewifWallet};
 
 use crate::ZwlWallet;
 
 use super::{convert_seed_material, convert_transactions};
 
 /// Migrate a Zecwallet-lite wallet to the Zewif wallet format
-pub fn migrate_to_zewif(wallet: &ZwlWallet) -> Result<ZewifTop> {
-    // Create a new ZewifTop
-    let mut zewif_top = ZewifTop::new();
+pub fn migrate_to_zewif(wallet: &ZwlWallet) -> Result<Zewif> {
+    // Create a new Zewif
+    let mut zewif_top = Zewif::new();
 
     // Convert seed material (mnemonic phrase)
     let seed_material = convert_seed_material(wallet)?;
@@ -113,7 +113,7 @@ pub fn migrate_to_zewif(wallet: &ZwlWallet) -> Result<ZewifTop> {
     //     zewif_wallet.add_account(default_account);
     // }
 
-    // Add wallet and transactions to the ZewifTop
+    // Add wallet and transactions to the Zewif
     zewif_top.add_wallet(zewif_wallet);
     zewif_top.set_transactions(transactions);
 

@@ -6,7 +6,7 @@ authors = ["dorianvp <dorianvp@zingolabs.org>"]
 
 [dependencies]
 # zewif = { path = "../zewif" }
-zewif = { git = "https://github.com/BlockchainCommons/zewif.git", branch = "master" }
+zewif = { git = "https://github.com/BlockchainCommons/zewif.git", rev = "9f37818894af622532e7d4ebc2569346a697df7f" }
 
 anyhow = "1.0.95"
 hex = "0.4.3"
